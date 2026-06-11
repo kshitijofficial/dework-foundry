@@ -65,10 +65,11 @@ contract Dework{
          _;
     }
 
-    function getFreelancerProfile() public view returns(FreelancerProfile[] memory) {
-             return freelancerProfiles;
+    function getFreelancerProfile(uint256 freelancerId) public view returns(FreelancerProfile memory) {
+             return freelancerProfiles[freelancerId];
     }
     
+
     function getNumberOfRegisteredFreelancers() public view returns(uint256){
         return freelancerProfiles.length;
     }
