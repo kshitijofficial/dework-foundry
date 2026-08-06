@@ -16,6 +16,8 @@ contract ReleaseEscrowPayment is Test {
     uint256 constant EMPLOYER_ID_UNDER_TEST = 0;
     uint256 constant FREELANCER_ID_UNDER_TEST = 0;
     uint256 constant JOB_ID_UNDER_TEST = 0;
+    uint256 constant LATE_PENALITY_BPS_PER_DAY = 500;
+    uint256 public BPS_DENOMINATOR = 10000;
     
 
     function _hireFreelancer() internal {
@@ -54,16 +56,33 @@ contract ReleaseEscrowPayment is Test {
 
     function test_releaseOfEscrowPaymentToFreelancerWhenWorkIsSubmittedOnTime() public{
         uint256 freelancerBeforeBalance = freelancer.balance;
+        
         vm.prank(employer);
         dework.releaseEscrowPayment(EMPLOYER_ID_UNDER_TEST,FREELANCER_ID_UNDER_TEST,JOB_ID_UNDER_TEST);
         
         uint256 freelancerAfterBalance = freelancer.balance;
-        console.log(freelancerAfterBalance);
         JobListing[] memory jobList = dework.getJobList(EMPLOYER_ID_UNDER_TEST);
-
         assertEq(freelancerAfterBalance-freelancerBeforeBalance,jobList[JOB_ID_UNDER_TEST].fixedPriceInWei);
     }
 
+    function test_releaseOfEscrowPaymentToFreelancerWhenWorkIsSubmittedOnAfterDeadline() public{
+        uint256 freelancerBeforeBalance = freelancer.balance;
+        JobListing[] memory jobList = dework.getJobList(EMPLOYER_ID_UNDER_TEST);
+        uint256 jobDeadline = jobList[JOB_ID_UNDER_TEST].deadlineTimestamp;
+        uint256 delayInCompletion = 2 days;
+        uint256 delayInDays = (delayInCompletion + 1 days - 1) / 1 days;
+        vm.warp(jobDeadline+delayInCompletion);
+
+        vm.prank(employer);
+        dework.releaseEscrowPayment(EMPLOYER_ID_UNDER_TEST,FREELANCER_ID_UNDER_TEST,JOB_ID_UNDER_TEST);
+        
+        uint256 freelancerAfterBalance = freelancer.balance;
+        uint256 amountToPay = jobList[JOB_ID_UNDER_TEST].fixedPriceInWei;
+        uint256 deductionBps = delayInDays * LATE_PENALITY_BPS_PER_DAY;
+        uint256 expectedPay = amountToPay - (amountToPay * deductionBps) / BPS_DENOMINATOR;
+        assertEq(freelancerAfterBalance-freelancerBeforeBalance,expectedPay);
+    }
+    
 
 }
    
