@@ -2,7 +2,6 @@
 pragma solidity 0.8.34;
 import {FreelancerProfile, EmployerProfile, CreateJobListingInput, JobListing} from "./types/DeworkTypes.sol";
 
-
 contract Dework {
     uint256 public constant LATE_PENALITY_BPS_PER_DAY = 500; //500/10000 = 5%
     uint256 public constant BPS_DENOMINATOR = 10000; //100%

@@ -6,7 +6,6 @@ import {Dework} from "../src/Dework.sol";
 import {FreelancerProfile, CreateJobListingInput,JobListing} from "../src/types/DeworkTypes.sol";
 import "forge-std/console.sol"; 
 
-
 contract ReleaseEscrowPayment is Test {
     Dework public dework;
     address employer = makeAddr("employer");
