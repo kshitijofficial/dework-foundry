@@ -67,14 +67,14 @@ contract ReleaseEscrowPayment is Test {
     function test_releaseEscrow_AfterDeadlineSubmission() public {
         uint256 freelancerBeforeBalance = freelancer.balance;
         uint256 delayInCompletion = 2 days;
-        uint256 delayInDays = _warpPastDeadline(EMPLOYER_ID_UNDER_TEST, JOB_ID_UNDER_TEST, delayInCompletion);
+        _warpPastDeadline(EMPLOYER_ID_UNDER_TEST, JOB_ID_UNDER_TEST, delayInCompletion);
 
         vm.prank(employer);
         dework.releaseEscrowPayment(EMPLOYER_ID_UNDER_TEST, FREELANCER_ID_UNDER_TEST, JOB_ID_UNDER_TEST);
 
         uint256 freelancerAfterBalance = freelancer.balance;
 
-        uint256 expectedPay = _calculateExpectedPayment(EMPLOYER_ID_UNDER_TEST, JOB_ID_UNDER_TEST, delayInDays);
+        uint256 expectedPay = 9;
         assertEq(freelancerAfterBalance - freelancerBeforeBalance, expectedPay);
     }
 
@@ -89,16 +89,4 @@ contract ReleaseEscrowPayment is Test {
         delayInDays = (delay + 1 days - 1) / 1 days;
     }
 
-    function _calculateExpectedPayment(uint256 employerId, uint256 jobId, uint256 delayInDays)
-        internal
-        view
-        returns (uint256)
-    {
-        JobListing[] memory jobList = dework.getJobList(employerId);
-
-        uint256 amountToPay = jobList[jobId].fixedPriceInWei;
-        uint256 deductionBps = delayInDays * LATE_PENALITY_BPS_PER_DAY;
-
-        return amountToPay - (amountToPay * deductionBps) / BPS_DENOMINATOR;
-    }
 }

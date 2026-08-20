@@ -34,6 +34,230 @@ contract Dework {
         owner = _initialOwner;
     }
 
+    function registerFreelancerProfile(string calldata name, uint8 experienceYears, uint256 hourlyRateWei) external {
+        uint256 freelancerId = getNumberOfRegisteredFreelancers();
+        FreelancerProfile memory freelancerProfile = _buildFreelancerProfile(
+            freelancerId, name, experienceYears, hourlyRateWei
+        );
+        _storeFreelancerProfile(freelancerProfile);
+    }
+
+    function _buildFreelancerProfile(
+        uint256 freelancerId,
+        string calldata name,
+        uint8 experienceYears,
+        uint256 hourlyRateWei
+    ) internal view returns (FreelancerProfile memory) {
+        return FreelancerProfile({
+            id: freelancerId,
+            name: name,
+            wallet: msg.sender,
+            experienceYears: experienceYears,
+            isAvailableHire: true,
+            hourlyRateWei: hourlyRateWei
+        });
+    }
+
+    function _storeFreelancerProfile(FreelancerProfile memory freelancerProfile) internal {
+        freelancerProfiles.push(freelancerProfile);
+        freelancerIdToAddress[freelancerProfile.id] = msg.sender;
+        emit FreelancerProfileRegistered(freelancerProfile.id, msg.sender);
+    }
+
+    function getFreelancerProfile(uint256 freelancerId) public view returns (FreelancerProfile memory) {
+        return freelancerProfiles[freelancerId];
+    }
+
+    function getNumberOfRegisteredFreelancers() public view returns (uint256) {
+        return freelancerProfiles.length;
+    }
+
+    function registerEmployerProfile(string calldata employerName) external {
+        uint256 employerId = getNumberOfRegisteredEmployers();
+        EmployerProfile memory employerProfile = _buildEmployerProfile(employerId, employerName);
+        _storeEmployerProfile(employerProfile);
+    }
+
+    function _buildEmployerProfile(uint256 employerId, string calldata employerName)
+        internal
+        view
+        returns (EmployerProfile memory)
+    {
+        return EmployerProfile({
+            id: employerId, name: employerName, isHiring: false, wallet: msg.sender, jobListing: new JobListing[](0)
+        });
+    }
+
+    function _storeEmployerProfile(EmployerProfile memory employerProfile) internal {
+        employerProfiles.push(employerProfile);
+        employerIdToAddress[employerProfile.id] = msg.sender;
+        emit FreelancerProfileRegistered(employerProfile.id, msg.sender);
+    }
+
+    function getNumberOfRegisteredEmployers() public view returns (uint256) {
+        return employerProfiles.length;
+    }
+
+    function createJobListing(uint256 employerId, CreateJobListingInput calldata jobListingInput)
+        external
+        payable
+        onlyAuthourizedEmployer(employerId)
+    {
+        _requireCorrectJobCreationFee(jobListingInput.fixedPriceInWei);
+
+        EmployerProfile storage employerProfile = _getEmployerProfile(employerId);
+        JobListing memory newJob = _buildJobListing(employerId, jobListingInput);
+
+        _fundEmployerEscrow(employerId, jobListingInput.fixedPriceInWei);
+        employerProfile.jobListing.push(newJob);
+    }
+
+    function _requireCorrectJobCreationFee(uint256 fixedPriceForJob) internal view {
+        if (msg.value != fixedPriceForJob) {
+            revert Dework_IncorrectJobCreationFee(fixedPriceForJob, msg.value);
+        }
+    }
+
+    function _buildJobListing(uint256 employerId, CreateJobListingInput calldata jobListingInput)
+        internal
+        view
+        returns (JobListing memory)
+    {
+        return JobListing({
+            id: getNumberOfCreatedJobList(employerId),
+            title: jobListingInput.title,
+            description: jobListingInput.description,
+            deadlineTimestamp: block.timestamp + jobListingInput.deadlineTimestamp,
+            isOpen: true,
+            fixedPriceInWei: jobListingInput.fixedPriceInWei,
+            hiredFreelancerId: 0,
+            hasHiredFreelancer: false,
+            isPaid: false
+        });
+    }
+
+    function _fundEmployerEscrow(uint256 employerId, uint256 amount) internal {
+        employerBalance[employerId] += amount;
+    }
+
+    function getNumberOfCreatedJobList(uint256 employerId) public view returns (uint256) {
+        return employerProfiles[employerId].jobListing.length;
+    }
+
+    function getJobList(uint256 employerId) external view returns (JobListing[] memory) {
+        return employerProfiles[employerId].jobListing;
+    }
+
+    function hireFreelancer(uint256 employerId, uint256 freelancerId, uint256 jobId)
+        public
+        onlyAuthourizedEmployer(employerId)
+        validateJobId(employerId, jobId)
+        validateFreelancerId(freelancerId)
+    {
+        JobListing storage job = _getJob(employerId, jobId);
+        _hireFreelancerForJob(job, freelancerId);
+    }
+
+    function _hireFreelancerForJob(JobListing storage job, uint256 freelancerId) internal {
+        _requireJobIsOpen(job);
+        job.hiredFreelancerId = freelancerId;
+        job.hasHiredFreelancer = true;
+        job.isOpen = false;
+    }
+
+    function _requireJobIsOpen(JobListing memory job) internal pure {
+        if (job.isOpen != true) {
+            revert Dework_JobClosed(job.id);
+        }
+    }
+
+    function releaseEscrowPayment(uint256 employerId, uint256 jobId, uint256 freelancerId)
+        public
+        onlyAuthourizedEmployer(employerId)
+        validateJobId(employerId, jobId)
+        validateFreelancerId(freelancerId)
+    {
+        JobListing storage job = _getJob(employerId, jobId);
+        uint256 amountToSend = job.fixedPriceInWei;
+
+        _requireEnoughEmployerBalance(employerId, amountToSend);
+        _requireFreelancerMatchesJob(job, freelancerId);
+        _requireJobIsNotPaid(job);
+        _markJobPaid(job);
+        _releasePaymentToFreelancer(employerId, freelancerId, amountToSend, job.deadlineTimestamp);
+    }
+
+    function _requireEnoughEmployerBalance(uint256 employerId, uint256 amountToSend) internal view {
+        if (employerBalance[employerId] < amountToSend) {
+            revert Dework_NotEnoughBalance(employerId, employerBalance[employerId]);
+        }
+    }
+
+    function _requireFreelancerMatchesJob(JobListing memory job, uint256 freelancerId) internal pure {
+        if (freelancerId != job.hiredFreelancerId) {
+            revert Dework_FreelancerIdMismatch(job.hiredFreelancerId, freelancerId);
+        }
+    }
+
+    function _requireJobIsNotPaid(JobListing memory job) internal pure {
+        if (job.isPaid == true) {
+            revert Dework_JobIsAlreadyPaid(job.id);
+        }
+    }
+
+    function _markJobPaid(JobListing storage job) internal {
+        job.isPaid = true;
+    }
+
+    function _releasePaymentToFreelancer(
+        uint256 employerId,
+        uint256 freelancerId,
+        uint256 amountToSend,
+        uint256 jobDeadlineTimestamp
+    ) internal {
+        employerBalance[employerId] -= amountToSend;
+        uint256 paymentAmount = _calculatePayment(amountToSend, jobDeadlineTimestamp);
+        _sendPaymentToFreelancer(freelancerIdToAddress[freelancerId], paymentAmount);
+    }
+
+    function _calculatePayment(uint256 amountToSend, uint256 jobDeadlineTimestamp) internal view returns (uint256) {
+        if (block.timestamp <= jobDeadlineTimestamp) {
+            return amountToSend;
+        }
+        uint256 delayInCompletion = block.timestamp - jobDeadlineTimestamp;
+        // Ceil division: rounds up to the next full day instead of truncating
+        uint256 delayInDays = (delayInCompletion + 1 days - 1) / 1 days;
+        uint256 deductionBps = delayInDays * LATE_PENALITY_BPS_PER_DAY;
+        if (deductionBps > BPS_DENOMINATOR) {
+            deductionBps = BPS_DENOMINATOR;
+        }
+        uint256 deductionAmount = (amountToSend * deductionBps) / BPS_DENOMINATOR;
+        return amountToSend - deductionAmount;
+    }
+
+    function _sendPaymentToFreelancer(address freelancer, uint256 amountToSend) internal {
+        (bool success,) = freelancer.call{value: amountToSend}("");
+        if (success == false) {
+            revert Dework_PaymentToFreelancerFailed(freelancer, amountToSend);
+        }
+    }
+
+    function modifyOwner(address newOwner) external onlyAuthourizedOwner {
+        owner = newOwner;
+    }
+
+    function withdrawAmount(uint256 employerId, uint256 withdrawalAmount) external onlyAuthourizedEmployer(employerId) {
+        _requireEnoughEmployerBalance(employerId, withdrawalAmount);
+        employerBalance[employerId] -= withdrawalAmount;
+        _sendWithdrawalToEmployer(employerId, withdrawalAmount);
+    }
+
+    function _sendWithdrawalToEmployer(uint256 employerId, uint256 withdrawalAmount) internal {
+        (bool success,) = employerIdToAddress[employerId].call{value: withdrawalAmount}("");
+        //TODO: Change it with revert statement
+        require(success == false, "Transfer failed to employer");
+    }
+
     modifier onlyAuthourizedOwner() {
         _onlyAuthourizedOwner();
         _;
@@ -44,6 +268,7 @@ contract Dework {
             revert Dework_NotAuthourisedOwner();
         }
     }
+
     modifier onlyAuthourizedEmployer(uint256 employerId) {
         _onlyAuthourizedEmployer(employerId);
         _;
@@ -66,6 +291,7 @@ contract Dework {
             revert Dework_UnauthourizedFreelancer(freelancerId, msg.sender);
         }
     }
+
     modifier validateJobId(uint256 employerId, uint256 jobId) {
         _validateJobId(employerId, jobId);
         _;
@@ -77,161 +303,11 @@ contract Dework {
         }
     }
 
-    function getFreelancerProfile(uint256 freelancerId) public view returns (FreelancerProfile memory) {
-        return freelancerProfiles[freelancerId];
-    }
-
-    function getNumberOfRegisteredFreelancers() public view returns (uint256) {
-        return freelancerProfiles.length;
-    }
-
-    function registerFreelancerProfile(string calldata name, uint8 experienceYears, uint256 hourlyRateWei) external {
-        uint256 freelancerId = getNumberOfRegisteredFreelancers();
-        FreelancerProfile memory freelancerProfile = FreelancerProfile({
-            id: freelancerId,
-            name: name,
-            wallet: msg.sender,
-            experienceYears: experienceYears,
-            isAvailableHire: true,
-            hourlyRateWei: hourlyRateWei
-        });
-        freelancerProfiles.push(freelancerProfile);
-        freelancerIdToAddress[freelancerId] = msg.sender;
-        emit FreelancerProfileRegistered(freelancerId, msg.sender);
-    }
-
-    function getNumberOfRegisteredEmployers() public view returns (uint256) {
-        return employerProfiles.length;
-    }
-
-    function registerEmployerProfile(string calldata employerName) external {
-        uint256 employerId = getNumberOfRegisteredEmployers();
-        EmployerProfile memory employerProfile = EmployerProfile({
-            id: employerId, name: employerName, isHiring: false, wallet: msg.sender, jobListing: new JobListing[](0)
-        });
-        employerProfiles.push(employerProfile);
-        employerIdToAddress[employerId] = msg.sender;
-        emit FreelancerProfileRegistered(employerId, msg.sender);
-    }
-
-    function getNumberOfCreatedJobList(uint256 employerId) public view returns (uint256) {
-        return employerProfiles[employerId].jobListing.length;
-    }
-
     function _getEmployerProfile(uint256 employerId) internal view returns (EmployerProfile storage) {
         return employerProfiles[employerId];
-    }
-
-    function createJobListing(uint256 employerId, CreateJobListingInput calldata jobListingInput)
-        external
-        payable
-        onlyAuthourizedEmployer(employerId)
-    {
-        uint256 fixedPriceForJob = jobListingInput.fixedPriceInWei;
-        if (msg.value != fixedPriceForJob) {
-            revert Dework_IncorrectJobCreationFee(fixedPriceForJob, msg.value);
-        }
-        EmployerProfile storage employerProfile = _getEmployerProfile(employerId);
-        uint256 jobId = getNumberOfCreatedJobList(employerId);
-        JobListing memory newJob = JobListing({
-            id: jobId,
-            title: jobListingInput.title,
-            description: jobListingInput.description,
-            deadlineTimestamp: block.timestamp + jobListingInput.deadlineTimestamp,
-            isOpen: true,
-            fixedPriceInWei: jobListingInput.fixedPriceInWei,
-            hiredFreelancerId: 0,
-            hasHiredFreelancer: false,
-            isPaid: false
-        });
-        employerBalance[employerId] += jobListingInput.fixedPriceInWei;
-        employerProfile.jobListing.push(newJob);
-    }
-
-    function _requireJobIsOpen(JobListing memory job) internal pure {
-        if (job.isOpen != true) {
-            revert Dework_JobClosed(job.id);
-        }
     }
 
     function _getJob(uint256 employerId, uint256 jobId) internal view returns (JobListing storage) {
         return employerProfiles[employerId].jobListing[jobId];
     }
-
-    function getJobList(uint256 employerId) external view returns (JobListing[] memory) {
-        return employerProfiles[employerId].jobListing;
-    }
-
-    function hireFreelancer(uint256 employerId, uint256 freelancerId, uint256 jobId)
-        public
-        onlyAuthourizedEmployer(employerId)
-        validateJobId(employerId, jobId)
-        validateFreelancerId(freelancerId)
-    {
-        JobListing storage job = _getJob(employerId, jobId);
-        _requireJobIsOpen(job);
-        job.hiredFreelancerId = freelancerId;
-        job.hasHiredFreelancer = true;
-        job.isOpen = false;
-    }
-
-    function _sendPaymentToFreelancer(address freelancer, uint256 amountToSend) internal {
-        (bool success,) = freelancer.call{value: amountToSend}("");
-        if (success == false) {
-            revert Dework_PaymentToFreelancerFailed(freelancer, amountToSend);
-        }
-    }
-
-    function _calculatePayment(uint256 amountToSend, uint256 jobDeadlineTimestamp) internal view returns (uint256) {
-        if (block.timestamp <= jobDeadlineTimestamp) {
-            return amountToSend;
-        }
-        uint256 delayInCompletion = block.timestamp - jobDeadlineTimestamp;
-        // Ceil division: rounds up to the next full day instead of truncating
-        uint256 delayInDays = (delayInCompletion + 1 days - 1) / 1 days;
-        uint256 deductionBps = delayInDays * LATE_PENALITY_BPS_PER_DAY;
-        if (deductionBps > BPS_DENOMINATOR) {
-            deductionBps = BPS_DENOMINATOR;
-        }
-        uint256 deductionAmount = (amountToSend * deductionBps) / BPS_DENOMINATOR;
-        return amountToSend - deductionAmount;
-    }
-
-    function releaseEscrowPayment(uint256 employerId, uint256 jobId, uint256 freelancerId)
-        public
-        onlyAuthourizedEmployer(employerId)
-        validateJobId(employerId, jobId)
-        validateFreelancerId(freelancerId)
-    {
-        JobListing storage job = _getJob(employerId, jobId);
-        uint256 amountToSend = job.fixedPriceInWei;
-        if (employerBalance[employerId] < amountToSend) {
-            revert Dework_NotEnoughBalance(employerId, employerBalance[employerId]);
-        }
-        if (freelancerId != job.hiredFreelancerId) {
-            revert Dework_FreelancerIdMismatch(job.hiredFreelancerId, freelancerId);
-        }
-        if (job.isPaid == true) {
-            revert Dework_JobIsAlreadyPaid(job.id);
-        }
-        job.isPaid = true;
-        employerBalance[employerId] -= amountToSend;
-        uint256 paymentAmount = _calculatePayment(amountToSend, job.deadlineTimestamp);
-        _sendPaymentToFreelancer(freelancerIdToAddress[freelancerId], paymentAmount);
-    }
-
-    function modifyOwner(address newOwner) external onlyAuthourizedOwner {
-        owner = newOwner;
-    }
-
-    function withdrawAmount(uint256 employerId, uint256 withdrawalAmount) external onlyAuthourizedEmployer(employerId) {
-        if (employerBalance[employerId] < withdrawalAmount) {
-            revert Dework_NotEnoughBalance(employerId, employerBalance[employerId]);
-        }
-        employerBalance[employerId] -= withdrawalAmount;
-        (bool success,) = employerIdToAddress[employerId].call{value: withdrawalAmount}("");
-        //TODO: Change it with revert statement
-        require(success == false, "Transfer failed to employer");
-    }
 }
-
