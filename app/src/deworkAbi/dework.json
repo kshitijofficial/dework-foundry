@@ -1,0 +1,679 @@
+[
+    {
+        "type": "constructor",
+        "inputs": [
+            {
+                "name": "_initialOwner",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "BPS_DENOMINATOR",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "LATE_PENALITY_BPS_PER_DAY",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "createJobListing",
+        "inputs": [
+            {
+                "name": "employerId",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "jobListingInput",
+                "type": "tuple",
+                "internalType": "struct CreateJobListingInput",
+                "components": [
+                    {
+                        "name": "title",
+                        "type": "string",
+                        "internalType": "string"
+                    },
+                    {
+                        "name": "description",
+                        "type": "string",
+                        "internalType": "string"
+                    },
+                    {
+                        "name": "deadlineTimestamp",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "fixedPriceInWei",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    }
+                ]
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "payable"
+    },
+    {
+        "type": "function",
+        "name": "employerBalance",
+        "inputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "employerIdToAddress",
+        "inputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "employerProfiles",
+        "inputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "id",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "name",
+                "type": "string",
+                "internalType": "string"
+            },
+            {
+                "name": "wallet",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "isHiring",
+                "type": "bool",
+                "internalType": "bool"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "freelancerIdToAddress",
+        "inputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "freelancerProfiles",
+        "inputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "id",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "name",
+                "type": "string",
+                "internalType": "string"
+            },
+            {
+                "name": "wallet",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "experienceYears",
+                "type": "uint8",
+                "internalType": "uint8"
+            },
+            {
+                "name": "isAvailableHire",
+                "type": "bool",
+                "internalType": "bool"
+            },
+            {
+                "name": "hourlyRateWei",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "getFreelancerProfile",
+        "inputs": [
+            {
+                "name": "freelancerId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "tuple",
+                "internalType": "struct FreelancerProfile",
+                "components": [
+                    {
+                        "name": "id",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "name",
+                        "type": "string",
+                        "internalType": "string"
+                    },
+                    {
+                        "name": "wallet",
+                        "type": "address",
+                        "internalType": "address"
+                    },
+                    {
+                        "name": "experienceYears",
+                        "type": "uint8",
+                        "internalType": "uint8"
+                    },
+                    {
+                        "name": "isAvailableHire",
+                        "type": "bool",
+                        "internalType": "bool"
+                    },
+                    {
+                        "name": "hourlyRateWei",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    }
+                ]
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "getJobList",
+        "inputs": [
+            {
+                "name": "employerId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "tuple[]",
+                "internalType": "struct JobListing[]",
+                "components": [
+                    {
+                        "name": "id",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "title",
+                        "type": "string",
+                        "internalType": "string"
+                    },
+                    {
+                        "name": "description",
+                        "type": "string",
+                        "internalType": "string"
+                    },
+                    {
+                        "name": "deadlineTimestamp",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "isOpen",
+                        "type": "bool",
+                        "internalType": "bool"
+                    },
+                    {
+                        "name": "fixedPriceInWei",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "hiredFreelancerId",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "hasHiredFreelancer",
+                        "type": "bool",
+                        "internalType": "bool"
+                    },
+                    {
+                        "name": "isPaid",
+                        "type": "bool",
+                        "internalType": "bool"
+                    }
+                ]
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "getNumberOfCreatedJobList",
+        "inputs": [
+            {
+                "name": "employerId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "getNumberOfRegisteredEmployers",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "getNumberOfRegisteredFreelancers",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "hireFreelancer",
+        "inputs": [
+            {
+                "name": "employerId",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "freelancerId",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "jobId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "modifyOwner",
+        "inputs": [
+            {
+                "name": "newOwner",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "owner",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "registerEmployerProfile",
+        "inputs": [
+            {
+                "name": "employerName",
+                "type": "string",
+                "internalType": "string"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "registerFreelancerProfile",
+        "inputs": [
+            {
+                "name": "name",
+                "type": "string",
+                "internalType": "string"
+            },
+            {
+                "name": "experienceYears",
+                "type": "uint8",
+                "internalType": "uint8"
+            },
+            {
+                "name": "hourlyRateWei",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "releaseEscrowPayment",
+        "inputs": [
+            {
+                "name": "employerId",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "jobId",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "freelancerId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "withdrawAmount",
+        "inputs": [
+            {
+                "name": "employerId",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "withdrawalAmount",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "event",
+        "name": "EmployerProfileRegistered",
+        "inputs": [
+            {
+                "name": "employerId",
+                "type": "uint256",
+                "indexed": false,
+                "internalType": "uint256"
+            },
+            {
+                "name": "caller",
+                "type": "address",
+                "indexed": false,
+                "internalType": "address"
+            }
+        ],
+        "anonymous": false
+    },
+    {
+        "type": "event",
+        "name": "FreelancerProfileRegistered",
+        "inputs": [
+            {
+                "name": "freelancerId",
+                "type": "uint256",
+                "indexed": false,
+                "internalType": "uint256"
+            },
+            {
+                "name": "caller",
+                "type": "address",
+                "indexed": false,
+                "internalType": "address"
+            }
+        ],
+        "anonymous": false
+    },
+    {
+        "type": "error",
+        "name": "Dework_FreelancerIdMismatch",
+        "inputs": [
+            {
+                "name": "expectedFreelancerId",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "actualFeelancerId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ]
+    },
+    {
+        "type": "error",
+        "name": "Dework_IncorrectJobCreationFee",
+        "inputs": [
+            {
+                "name": "expectedFee",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "actualFee",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ]
+    },
+    {
+        "type": "error",
+        "name": "Dework_InvalidJobId",
+        "inputs": [
+            {
+                "name": "employerId",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "jobId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ]
+    },
+    {
+        "type": "error",
+        "name": "Dework_JobClosed",
+        "inputs": [
+            {
+                "name": "jobId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ]
+    },
+    {
+        "type": "error",
+        "name": "Dework_JobIsAlreadyPaid",
+        "inputs": [
+            {
+                "name": "jobId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ]
+    },
+    {
+        "type": "error",
+        "name": "Dework_NotAuthourisedOwner",
+        "inputs": []
+    },
+    {
+        "type": "error",
+        "name": "Dework_NotEnoughBalance",
+        "inputs": [
+            {
+                "name": "employerId",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "employerBalance",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ]
+    },
+    {
+        "type": "error",
+        "name": "Dework_PaymentToFreelancerFailed",
+        "inputs": [
+            {
+                "name": "freelancer",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "amountSent",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ]
+    },
+    {
+        "type": "error",
+        "name": "Dework_UnauthourizedEmployer",
+        "inputs": [
+            {
+                "name": "employerId",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "caller",
+                "type": "address",
+                "internalType": "address"
+            }
+        ]
+    },
+    {
+        "type": "error",
+        "name": "Dework_UnauthourizedFreelancer",
+        "inputs": [
+            {
+                "name": "freelancerId",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "caller",
+                "type": "address",
+                "internalType": "address"
+            }
+        ]
+    }
+]
