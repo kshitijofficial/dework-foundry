@@ -15,8 +15,6 @@ Repository: https://github.com/kshitijofficial/dework-foundry
 
 - `master` - Base Foundry smart contract project with core `Dework` contract tests, including payment release deadline coverage.
 - `refactor` - Refactored Solidity implementation and tests with cleaner contract structure and updated behavior.
-- `exp/frontend` - Experimental frontend branch that adds the initial React/Vite dapp.
-- `dapp` - Local branch pointing to the same commit as `exp/frontend`; contains the initial frontend work.
 - `dework-dapp` - Current dapp branch with frontend contract read/write integration and updated `App.jsx`/CSS.
 
 ## Smart Contract Features
