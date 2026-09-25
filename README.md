@@ -1,66 +1,81 @@
-## Foundry
+# Dework Foundry
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+Dework is a Foundry-based Solidity project for a freelance work marketplace. It includes smart contracts for freelancer and employer profiles, job listings, hiring, escrow funding, and releasing payments with a late-delivery penalty.
 
-Foundry consists of:
+Repository: https://github.com/kshitijofficial/dework-foundry
 
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+## Project Structure
 
-## Documentation
+- `src/` - Solidity contracts and shared types.
+- `test/` - Foundry tests for profile registration, job creation, hiring, and escrow payment release.
+- `script/` - Foundry deployment script for the `Dework` contract.
+- `app/` - Vite React frontend for interacting with the contract.
 
-https://book.getfoundry.sh/
+## Branches
 
-## Usage
+- `master` - Base Foundry smart contract project with core `Dework` contract tests, including payment release deadline coverage.
+- `refactor` - Refactored Solidity implementation and tests with cleaner contract structure and updated behavior.
+- `dework-dapp` - Current dapp branch with frontend contract read/write integration and updated `App.jsx`/CSS.
 
-### Build
+## Smart Contract Features
+
+- Register freelancer profiles.
+- Register employer profiles.
+- Create funded job listings.
+- Hire freelancers for jobs.
+- Release escrow payments.
+- Apply a daily late-payment penalty after the deadline.
+- Allow employer escrow withdrawals.
+- Allow owner updates.
+
+## Requirements
+
+- Foundry
+- Node.js and npm, for the frontend in `app/`
+
+## Foundry Commands
+
+Build contracts:
 
 ```shell
-$ forge build
+forge build
 ```
 
-### Test
+Run tests:
 
 ```shell
-$ forge test
+forge test
 ```
 
-### Format
+Format Solidity:
 
 ```shell
-$ forge fmt
+forge fmt
 ```
 
-### Gas Snapshots
+Run the deployment script locally:
 
 ```shell
-$ forge snapshot
+forge script script/Dework.s.sol:DeworkScript
 ```
 
-### Anvil
+## Frontend Commands
+
+From the `app/` directory:
 
 ```shell
-$ anvil
+npm install
+npm run dev
 ```
 
-### Deploy
+Build the frontend:
 
 ```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+npm run build
 ```
 
-### Cast
+Run frontend linting:
 
 ```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+npm run lint
 ```
